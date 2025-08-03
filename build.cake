@@ -2,7 +2,7 @@
 // Use build.ps1 or build.sh to run the build script. Command line arguments are documented below.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-const string DefaultSolutionFile = "./RENAME-ME.slnx";
+const string DefaultSolutionFile = "./Jaahas.StringCache.slnx";
 const string VersionFile = "./build/version.json";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
