@@ -4,35 +4,38 @@ namespace Jaahas.StringCacheBenchmarks;
 
 [MemoryDiagnoser]
 public class StringCacheBenchmarks {
-
-    [Params(1_000, 10_000, 100_000)]
+    
+    [Params(10_000, 100_000, 1_000_000)]
     public int Count { get; set; }
 
+    private List<string> _stringsToIntern = null!;
 
-    [Benchmark(Baseline = true)]
-    public void NoInterning() {
+
+    [GlobalSetup]
+    public void Setup() {
+        _stringsToIntern = new List<string>(Count);
         for (var i = 0; i < Count; i++) {
-            _ = new Observation("Front Door", $"Value-{i % 100}");
+            _stringsToIntern.Add(i.ToString());
         }
     }
     
     
-    [Benchmark]
+    [GlobalCleanup]
+    public void Cleanup() {
+        _stringsToIntern.Clear();
+        StringCache.Shared.Clear();
+    }
+    
+    
+    [Benchmark(Baseline = true)]
     public void NativeInterning() {
-        for (var i = 0; i < Count; i++) {
-            _ = new Observation(string.Intern("Front Door"), string.Intern($"Value-{i % 100}"));
-        }
+        Parallel.ForEach(_stringsToIntern, x => string.Intern(x));
     }
     
     
     [Benchmark]
     public void CacheInterning() {
-        for (var i = 0; i < Count; i++) {
-            _ = new Observation(StringCache.Shared.Intern("Front Door"), StringCache.Shared.Intern($"Value-{i % 100}"));
-        }
+        Parallel.ForEach(_stringsToIntern, x => StringCache.Shared.Intern(x));
     }
-    
-
-    private readonly record struct Observation(string Location, string Value);
 
 }
