@@ -18,11 +18,9 @@ namespace Jaahas;
 ///   method.
 /// </para>
 ///
-/// <remarks>
-///   The number of strings in the cache and the total size of the cached strings (in bytes) can be
-///   accessed via the <see cref="Count"/> and <see cref="Size"/> properties respectively. These
-///   are not available when using the native interning.
-/// </remarks>
+/// <para>
+///   The number of strings in the cache can be accessed via the <see cref="Count"/> property.
+/// </para>
 /// 
 /// </remarks>
 public class StringCache {
