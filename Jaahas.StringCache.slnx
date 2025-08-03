@@ -12,6 +12,11 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/samples/" />
-  <Folder Name="/src/" />
-  <Folder Name="/test/" />
+  <Folder Name="/src/">
+    <Project Path="src\Jaahas.StringCache\Jaahas.StringCache.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test\Jaahas.StringCache.Benchmarks\Jaahas.StringCache.Benchmarks.csproj" Type="Classic C#" />
+    <Project Path="test\Jaahas.StringCache.Tests\Jaahas.StringCache.Tests.csproj" Type="Classic C#" />
+  </Folder>
 </Solution>
