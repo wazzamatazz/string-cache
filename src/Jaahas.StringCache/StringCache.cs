@@ -92,7 +92,7 @@ public class StringCache {
 
         return NativeInternEnabled
             ? string.Intern(str) 
-            : _cache!.GetOrAdd(str!, str!);
+            : _cache!.GetOrAdd(str, str);
     }
     
     
@@ -117,7 +117,7 @@ public class StringCache {
 #else
         return NativeInternEnabled
             ? string.IsInterned(str)
-            : _cache!.TryGetValue(str!, out var cachedValue)
+            : _cache!.TryGetValue(str, out var cachedValue)
                 ? cachedValue
                 : null;
 #endif
