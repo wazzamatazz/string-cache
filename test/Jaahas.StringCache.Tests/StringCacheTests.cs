@@ -703,4 +703,216 @@ public class StringCacheTests {
         Assert.Equal(1, cache.Count);
     }
 
+
+    [Fact]
+    public void CalculateSize_EmptyCache_CustomCache_ReturnsZero() {
+        // Arrange
+        var cache = new StringCache();
+
+        // Act
+        var size = cache.CalculateSize();
+
+        // Assert
+        Assert.Equal(0L, size);
+    }
+
+
+    [Fact]
+    public void CalculateSize_NativeCache_ReturnsMinusOne() {
+        // Arrange
+        var cache = StringCache.Native;
+
+        // Act
+        var size = cache.CalculateSize();
+
+        // Assert
+        Assert.Equal(-1L, size);
+    }
+
+
+    [Fact]
+    public void CalculateSize_SingleString_CustomCache_ReturnsCorrectSize() {
+        // Arrange
+        var cache = new StringCache();
+        const string testString = "hello";
+        cache.Intern(testString);
+
+        // Act
+        var size = cache.CalculateSize();
+
+        // Assert
+        var expectedSize = testString.Length * sizeof(char);
+        Assert.Equal(expectedSize, size);
+    }
+
+
+    [Fact]
+    public void CalculateSize_MultipleStrings_CustomCache_ReturnsCorrectTotalSize() {
+        // Arrange
+        var cache = new StringCache();
+        const string string1 = "hello";
+        const string string2 = "world";
+        const string string3 = "test";
+        
+        cache.Intern(string1);
+        cache.Intern(string2);
+        cache.Intern(string3);
+
+        // Act
+        var size = cache.CalculateSize();
+
+        // Assert
+        var expectedSize = (string1.Length + string2.Length + string3.Length) * sizeof(char);
+        Assert.Equal(expectedSize, size);
+        Assert.Equal(3, cache.Count);
+    }
+
+
+    [Fact]
+    public void CalculateSize_WithEmptyString_CustomCache_IncludesInCalculation() {
+        // Arrange
+        var cache = new StringCache();
+        const string normalString = "hello";
+        var emptyString = string.Empty;
+        
+        cache.Intern(normalString);
+        cache.Intern(emptyString);
+
+        // Act
+        var size = cache.CalculateSize();
+
+        // Assert
+        var expectedSize = (normalString.Length + emptyString.Length) * sizeof(char);
+        Assert.Equal(expectedSize, size);
+        Assert.Equal(2, cache.Count);
+    }
+
+
+    [Fact]
+    public void CalculateSize_WithWhitespaceStrings_CustomCache_ReturnsCorrectSize() {
+        // Arrange
+        var cache = new StringCache();
+        const string spaces = "   ";
+        const string tabs = "\t\t";
+        const string newlines = "\n\r";
+        
+        cache.Intern(spaces);
+        cache.Intern(tabs);
+        cache.Intern(newlines);
+
+        // Act
+        var size = cache.CalculateSize();
+
+        // Assert
+        var expectedSize = (spaces.Length + tabs.Length + newlines.Length) * sizeof(char);
+        Assert.Equal(expectedSize, size);
+        Assert.Equal(3, cache.Count);
+    }
+
+
+    [Fact]
+    public void CalculateSize_WithUnicodeStrings_CustomCache_ReturnsCorrectSize() {
+        // Arrange
+        var cache = new StringCache();
+        const string unicode1 = "Hello 世界";
+        const string unicode2 = "🌟✨";
+        const string unicode3 = "café";
+        
+        cache.Intern(unicode1);
+        cache.Intern(unicode2);
+        cache.Intern(unicode3);
+
+        // Act
+        var size = cache.CalculateSize();
+
+        // Assert
+        var expectedSize = (unicode1.Length + unicode2.Length + unicode3.Length) * sizeof(char);
+        Assert.Equal(expectedSize, size);
+        Assert.Equal(3, cache.Count);
+    }
+
+
+    [Fact]
+    public void CalculateSize_AfterClear_CustomCache_ReturnsZero() {
+        // Arrange
+        var cache = new StringCache();
+        cache.Intern("hello");
+        cache.Intern("world");
+        Assert.True(cache.CalculateSize() > 0);
+
+        // Act
+        cache.Clear();
+        var size = cache.CalculateSize();
+
+        // Assert
+        Assert.Equal(0L, size);
+        Assert.Equal(0, cache.Count);
+    }
+
+
+    [Fact]
+    public void CalculateSize_DuplicateStrings_CustomCache_CountsOnce() {
+        // Arrange
+        var cache = new StringCache();
+        const string testString = "duplicate";
+        
+        cache.Intern(testString);
+        cache.Intern(testString); // Same string interned twice
+
+        // Act
+        var size = cache.CalculateSize();
+
+        // Assert
+        var expectedSize = testString.Length * sizeof(char);
+        Assert.Equal(expectedSize, size);
+        Assert.Equal(1, cache.Count); // Should only be counted once
+    }
+
+
+    [Fact]
+    public void CalculateSize_LargeString_CustomCache_ReturnsCorrectSize() {
+        // Arrange
+        var cache = new StringCache();
+        var largeString = new string('x', 10000);
+        cache.Intern(largeString);
+
+        // Act
+        var size = cache.CalculateSize();
+
+        // Assert
+        var expectedSize = largeString.Length * sizeof(char);
+        Assert.Equal(expectedSize, size);
+        Assert.Equal(20000L, size); // 10000 chars * 2 bytes each
+    }
+
+
+    [Fact]
+    public async Task CalculateSize_ConcurrentAccess_CustomCache_ThreadSafe() {
+        // Arrange
+        var cache = new StringCache();
+        const int threadCount = 5;
+        const int stringsPerThread = 20;
+        var tasks = new Task[threadCount];
+
+        // Act - Add strings concurrently
+        for (int i = 0; i < threadCount; i++) {
+            int threadId = i;
+            tasks[i] = Task.Run(() => {
+                for (int j = 0; j < stringsPerThread; j++) {
+                    cache.Intern($"thread-{threadId}-string-{j}");
+                }
+            }, TestContext.Current.CancellationToken);
+        }
+
+        await Task.WhenAll(tasks);
+
+        // Calculate size after all strings are added
+        var size = cache.CalculateSize();
+
+        // Assert
+        Assert.True(size > 0);
+        Assert.True(cache.Count > 0);
+        Assert.True(cache.Count <= threadCount * stringsPerThread); // Some strings might be duplicates
+    }
+
 }

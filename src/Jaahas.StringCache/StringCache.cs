@@ -135,4 +135,27 @@ public class StringCache {
         _cache!.Clear();
     }
 
+
+    /// <summary>
+    /// Calculates the total size of the interned strings in bytes.
+    /// </summary>
+    /// <returns>
+    ///   The total size of the cached strings in bytes. Returns -1 when native interning is enabled.
+    /// </returns>
+    /// <remarks>
+    ///   This method calculates the size based on UTF-16 encoding (2 bytes per character).
+    /// </remarks>
+    public long CalculateSize() {
+        if (NativeInternEnabled) {
+            return -1;
+        }
+
+        long totalSize = 0;
+        foreach (var key in _cache!.Keys) {
+            totalSize += key.Length * sizeof(char);
+        }
+
+        return totalSize;
+    }
+
 }
