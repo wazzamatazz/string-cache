@@ -8,6 +8,7 @@
     <RootNamespace>Jaahas</RootNamespace>
     <Description>Provides a string cache that can provide a more performant alternative to built-in interning.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
