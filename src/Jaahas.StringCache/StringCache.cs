@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Jaahas;
 
@@ -80,17 +81,46 @@ public class StringCache {
     ///   The string to intern.
     /// </param>
     /// <returns>
-    ///   The interned string. If <paramref name="str"/> is <see langword="null"/> or white space,
-    ///   it is returned as-is.
+    ///   The interned string. If <paramref name="str"/> is <see langword="null"/>, it is returned
+    ///   as-is.
     /// </returns>
-    public string Intern(string str) {
-        if (string.IsNullOrWhiteSpace(str)) {
-            return str;
+    [return: NotNullIfNotNull(nameof(str))]
+    public string? Intern(string? str) {
+        if (str == null) {
+            return null;
         }
 
         return NativeInternEnabled
             ? string.Intern(str) 
-            : _cache!.GetOrAdd(str, str);
+            : _cache!.GetOrAdd(str!, str!);
+    }
+    
+    
+    /// <summary>
+    /// Gets a reference to the interned string if it exists in the cache.
+    /// </summary>
+    /// <param name="str">
+    ///   The string to retrieve from the cache.
+    /// </param>
+    /// <returns>
+    ///   The interned string if it exists in the cache; otherwise, <see langword="null"/>.
+    /// </returns>
+    public string? Get(string? str) {
+        if (str == null) {
+            return null;
+        }
+        
+#if NET8_0_OR_GREATER
+        return NativeInternEnabled
+            ? string.IsInterned(str)
+            : _cache!.GetValueOrDefault(str);
+#else
+        return NativeInternEnabled
+            ? string.IsInterned(str)
+            : _cache!.TryGetValue(str!, out var cachedValue)
+                ? cachedValue
+                : null;
+#endif
     }
     
     
