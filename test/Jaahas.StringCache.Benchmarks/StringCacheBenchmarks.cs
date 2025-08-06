@@ -14,8 +14,9 @@ public class StringCacheBenchmarks {
     [GlobalSetup]
     public void Setup() {
         _stringsToIntern = new List<string>(Count);
+        var runId = Guid.CreateVersion7(TimeProvider.System.GetUtcNow());
         for (var i = 0; i < Count; i++) {
-            _stringsToIntern.Add(i.ToString());
+            _stringsToIntern.Add(string.Concat(i.ToString(), "_", runId));
         }
     }
     
